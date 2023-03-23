@@ -8,10 +8,53 @@ const {
   STRATEGY_GITHUB,
   GITHUB_CLIENTID,
   GITHUB_SECRET,
+  STRATEGY_JWT,
+  JWT_PRIVATEKEY,
+  COOKIE_USER,
 } = require('./constants')
 const GitHubStrategy = require('passport-github2')
+const jwt = require('passport-jwt')
+const { generateToken } = require('./jwt')
+
+//username y password
+const JWTEstrategy = jwt.Strategy
+const JWTExtract = jwt.ExtractJwt
+
+const cookieExtractor = (req) => {
+  let token = null
+
+  if (req && req.cookies) {
+    token = req.cookies[COOKIE_USER]
+  }
+
+  return token
+}
 
 const InitPassport = () => {
+
+  //JWT
+  passport.use(
+    STRATEGY_JWT,
+    new JWTEstrategy(
+      {
+        jwtFromRequest: JWTExtract.fromExtractors([cookieExtractor]),
+        secretOrKey: JWT_PRIVATEKEY,
+      },
+      async (jwt_payload, done) => {
+        try {
+          console.log('jwt')
+          const { payload } = jwt_payload
+          const user = await UsersModel.findById(payload.id)
+          delete user._doc.password
+          console.log(user)
+          done(null, { user: user._doc })
+        } catch (error) {
+          done(error)
+        }
+      }
+    )
+  )
+
   //Register
   passport.use(
     STRATEGY_REGISTER,
@@ -60,7 +103,11 @@ const InitPassport = () => {
           if (!isValidPassword) {
             done(null, false)
           }
-          done(null, user)
+          const token = generateToken({ id: user.id, rol: user.role })
+          if(token){
+            done(null, {user: user, token:token})
+          }
+          console.log('passport')
         } catch (error) {
           done(error)
         }
@@ -79,14 +126,25 @@ const InitPassport = () => {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          console.log(profile)
           let user = await UsersModel.findOne({ email: profile._json.email })
           if (!user) {
+            if (!profile._json.name) {
+              let firstName = 'Nombre'
+            }
+
+            firstName = profile._json.name
+
+            if (!profile._json.email) {
+              let email = 'mail@mail.com'
+            }
+
+            email = profile._json.email
+
             user = {
-              firstName: profile._json.name,
+              firstName: firstName,
               lastName: '',
               age: 20,
-              email: profile._json.email,
+              email: email,
               password: '',
             }
             const newUser = await UsersModel.create(user)
@@ -100,17 +158,6 @@ const InitPassport = () => {
       }
     )
   )
-
-  //Serialize user
-  passport.serializeUser((user, done) => {
-    done(null, user._id)
-  })
-
-  //Deserialize user
-  passport.deserializeUser(async (id, done) => {
-    const user = await UsersModel.findById(id)
-    done(null, user)
-  })
 }
 
 module.exports = { InitPassport }

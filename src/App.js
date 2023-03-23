@@ -71,7 +71,7 @@ connectSocket(httpServer)
 mongoose.set('strictQuery', false)
 mongoose.connect(
   'mongodb+srv://GisellaIbarrola:Gisella96@tpcoder.v469a0m.mongodb.net/?retryWrites=true&w=majority',
-  // { useNewUrlParser: true, saveUninitialized: true },
+    // { useNewUrlParser: true, saveUninitialized: true },
   (error) => {
     if (error) {
       console.log('Error de conexión. ', error)

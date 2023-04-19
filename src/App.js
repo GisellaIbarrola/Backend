@@ -13,7 +13,7 @@ const connectMongo = require('connect-mongo')
 const sessionRouter = require('./routes/session.router')
 const { InitPassport } = require('./config/passport.config')
 const passport = require('passport')
-const { PORT } = require('./config/config')
+const { MONGO_URL, PORT } = require('./config/config')
 
 //Express
 server.use(express.json())

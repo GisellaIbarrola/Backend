@@ -1,18 +1,27 @@
-const { productService, cartService } = require('../services')
-const { mapProductCart, calculateCartTotal } = require('../config/carts')
+const { productService, cartService, ticketService } = require('../services')
+const {
+  mapProductCart,
+  calculateCartTotal,
+  getUserByID,
+} = require('../config/carts')
+const { v4: uuidv4 } = require('uuid')
+const UserDTO = require('../dao/DTOs/user.dto')
 
 const create = async (req, res) => {
   try {
-    const { products = [] } = req.body
-
+    const { products = [], users } = req.body
     const { productCartList, productsNotFound } = await mapProductCart(products)
+    const userFound = await getUserByID(users)
+    let userDTO = new UserDTO(userFound)
+    userDTO.user = users
     const cart = {
       totalPrice: calculateCartTotal(productCartList),
       totalQuantity: productCartList.length,
       products: productCartList,
+      users: userDTO,
     }
 
-    await cartService.insert(productCartList)
+    await cartService.insert(cart)
 
     return res.json({
       status: 'Success',
@@ -179,25 +188,83 @@ const setCart = async (cart) => {
   return cart
 }
 
-async function fetchData() {
-  const url = [
-    productService.getById
-  ]
-
-  const promises = url.map(url => fetch(url))
-  
-  const responses = await Promise.all(promises)
-
-  const data = await Promise.all(responses.map(response => response.json()))
-
-  return data
+const validateStockOfProductByID = (products, idToFilter, quantity) => {
+  const productFiltered = products.filter(
+    (product) => product._id.toString() == idToFilter
+  )
+  return productFiltered[0].stock >= quantity
 }
 
+const purchaseCart = async (req, res) => {
+  try {
+    const cid = req.params.cid
+    const cartFound = await cartService.getById(cid)
+
+    const productsPurchased = []
+    const productsNotPurchased = []
+
+    const productsIDs = cartFound.products.map((product) => product.product)
+    const productsFound = await productService.getAllProductsByIDs(productsIDs)
+
+    cartFound.products.forEach((cartProduct) => {
+      if (
+        validateStockOfProductByID(
+          productsFound,
+          cartProduct.product._id.toString(),
+          cartProduct.quantity
+        )
+      ) {
+        productsPurchased.push(cartProduct)
+      } else {
+        productsNotPurchased.push(cartProduct)
+      }
+    })
+
+    let ticketAmount = 0
+    let ticket = {}
+
+    const userFound = await getUserByID(cartFound.users[0].user)
+    const purchaser = userFound.email
+
+    if (productsPurchased.length > 0) {
+      ticketAmount = calculateCartTotal(productsPurchased)
+
+      ticket = {
+        code: uuidv4(),
+        amount: ticketAmount,
+        purchaser: purchaser,
+      }
+
+      await ticketService.insert(ticket)
+    }
+
+    let cartProductsNotPurchased = {}
+    if (productsNotPurchased.length > 0) {
+      cartProductsNotPurchased = {
+        totalPrice: calculateCartTotal(productsNotPurchased),
+        totalQuantity: productsNotPurchased.length,
+        products: productsNotPurchased,
+      }
+      cartService.insert(cartProductsNotPurchased)
+    }
+
+    res.json({
+      status: 'ok',
+      msg: 'Ticket creado',
+      ticket,
+    })
+  } catch (error) {
+    res.json({
+      status: 'error',
+      msg: error.message,
+    })
+  }
+}
 module.exports = {
   create,
   getByID,
-  // addProduct,
   deleteProduct,
   updateAllProducts,
   updateProductQuantity,
+  purchaseCart,
 }

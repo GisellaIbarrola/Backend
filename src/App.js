@@ -15,6 +15,9 @@ const { InitPassport } = require('./config/passport.config')
 const passport = require('passport')
 const { MONGO_URL, PORT } = require('./config/config')
 const { mdwError } = require('./utils/errorHandler')
+const mdwLogger = require('./utils/logger')
+const loggerRouter = require('./routes/logger.router')
+const usersRouter = require('./routes/users.router')
 
 //Express
 server.use(express.json())
@@ -33,7 +36,7 @@ server.use(cookieParser())
 server.use(
   session({
     store: connectMongo.create({
-      mongoUrl: 'mongodb+srv://GisellaIbarrola:Gisella96@tpcoder.v469a0m.mongodb.net/?retryWrites=true&w=majority',
+      mongoUrl: MONGO_URL,
       mongoOptions: {
         useNewUrlParser: true,
         useUnifiedTopology: true,
@@ -52,13 +55,15 @@ server.use(passport.initialize())
 server.use(passport.session())
 
 //Routes
+server.use(mdwLogger)
+server.use(mdwError)
 server.use('/api/products', productRouter)
 server.use('/api/carts', cartsRouter)
 server.use('/api/chats', chatsRouter)
 server.use('/', viewsRouter)
-// server.use('/api/sessions', viewsRouter)
 server.use('/api/sessions', sessionRouter)
-server.use(mdwError)
+server.use('/loggerTest', loggerRouter)
+server.use('/api/users', usersRouter)
 
 //Socket io
 const httpServer = server.listen(PORT, () => {
@@ -69,7 +74,7 @@ connectSocket(httpServer)
 
 //Mongoose
 mongoose.set('strictQuery', false)
-mongoose.connect('mongodb+srv://GisellaIbarrola:Gisella96@tpcoder.v469a0m.mongodb.net/?retryWrites=true&w=majority', (error) => {
+mongoose.connect(MONGO_URL, (error) => {
   if (error) {
     console.log('Error de conexión. ', error)
     process.exit()

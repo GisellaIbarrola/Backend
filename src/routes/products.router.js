@@ -1,7 +1,7 @@
 const { Router } = require('express')
 const productsController = require('../controllers/products.controller')
-const multerUtils = require('../config/multer.utils')
-const { mdwOnlyAdmin } = require('../config/mdws')
+const multerUtils = require('../utils/multer.utils')
+const { mdwOnlyAdmin, mdwUserPremium } = require('../config/mdws')
 
 const router = Router()
 
@@ -19,7 +19,7 @@ router.get('/:pid', productsController.getProductById)
 router.post(
   '/',
   multerUtils.single('file'),
-  mdwOnlyAdmin,
+  mdwUserPremium,
   productsController.addProduct
 )
 

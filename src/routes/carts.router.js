@@ -1,6 +1,5 @@
 const { Router } = require('express')
 const cartsController = require('../controllers/carts.controller')
-const { mdwUserSession } = require('../config/mdws')
 
 const router = Router()
 
@@ -13,7 +12,7 @@ router.post('/', cartsController.create)
 router.get('/:cid', cartsController.getByID)
 
 //Add Product to Cart ID ver si hace falta
-// router.post('/:cid/product/:pid', cartsController.addProduct)
+router.post('/:cid/product/:pid', cartsController.addProduct)
 
 //Delete Product from Cart ID
 router.delete('/:cid/product/:pid', cartsController.deleteProduct)

@@ -1,9 +1,10 @@
 const mongoose = require('mongoose')
-const { PERSISTANCE: PERSISTENCE, MONGO_URL } = require('../config/config')
+const { PERSISTENCE, MONGO_URL } = require('../config/config')
 
 let productsDao = {};
 let cartsDao = {};
 let ticketsDao = {};
+let userDao = {};
 (async () => {
   switch (PERSISTENCE) {
     case 'MONGO':
@@ -12,6 +13,7 @@ let ticketsDao = {};
       const productsMongoPersistance = await require('./products.dao')
       const cartsMongoPersistance = await require('./carts.dao')
       const ticketsMongoPersistance = await require('./tickets.dao')
+      const userMongoPersistance = await require('./user.dao')
       productsDao.get = productsMongoPersistance.get
       productsDao.getById = productsMongoPersistance.getById
       productsDao.getAllProductsByIDs = productsMongoPersistance.getAllProductsByIDs
@@ -24,6 +26,7 @@ let ticketsDao = {};
       cartsDao.updateById = cartsMongoPersistance.updateById
       cartsDao.deleteById = cartsMongoPersistance.deleteById
       ticketsDao.insert = ticketsMongoPersistance.insert
+      userDao.getByEmail = userMongoPersistance.getByEmail
       break
     case 'MEMORY':
       const productsMemory = await require('./productsMemory.dao')
@@ -40,9 +43,9 @@ let ticketsDao = {};
       cartsDao.deleteById = cartsMemory.deleteById
       break
     default:
-      console.log('Undefined Persistance');
+      req.fatal('Undefined Persistence')
       break
   }
 })()
 
-module.exports = { productsDao, cartsDao, ticketsDao }
+module.exports = { productsDao, cartsDao, ticketsDao, userDao }

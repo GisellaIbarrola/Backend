@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
-const { JWT_PRIVATEKEY } = require('./constants')
+const { JWT_PRIVATEKEY } = require('../utils/constants')
+const UsersDaoMongo = require('../dao/user.dao')
 
 const generateToken = (payload) => {
   const token = jwt.sign({ payload }, JWT_PRIVATEKEY, { expiresIn: '1h' })
@@ -29,7 +30,29 @@ const getPayload = (req, res, next) => {
   }
 }
 
+const getPayloadByCookie = (req, res, next) => {
+  const token = req.cookies.token
+  if (!token) {
+    return res.status(403).send({ error: 'Token was not found' })
+  }
+  if (token) {
+    jwt.verify(token, JWT_PRIVATEKEY, async (error, credential) => {
+      if (error) {
+        res.status(403).send({ error: 'Unexpected error', description: error })
+      } else {
+        console.log("jwt", credential);
+        const user = await UsersDaoMongo.getById(credential.payload.id)
+        req.payload = user
+        next()
+      }
+    })
+  } else {
+    res.status(401).send({ error: 'Token was not found' })
+  }
+}
+
 module.exports = {
   generateToken,
   getPayload,
+  getPayloadByCookie,
 }

@@ -1,0 +1,44 @@
+paths:
+  /api/products/:
+    get:
+      summary: Obtener todos los productos
+      tags: 
+        - "Products"
+      responses:
+        "200":
+          description: Productos conseguidos con éxito
+        "500":
+          description: Error del servidor
+  /api/products/{pid}:
+    put:
+      summary: Actualizar producto por ID
+      tags:
+        - "Products"
+      parameters:
+      - name: pid
+        in: path
+        required: true
+        description: ID del producto a actualizar
+        schema:
+          $type: String
+      responses:
+        "200":
+          description: Producto actualizado con éxito
+        "500":
+          description: Error del servidor
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/requestBodies/actualizarProducto'
+
+components:
+  requestBodies:
+    actualizarProducto:
+      type: object
+      properties:
+        price: 
+          type: String
+          description: Nuevo precio
+      example:
+        price: "2000"

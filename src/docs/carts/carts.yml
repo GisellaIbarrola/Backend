@@ -1,0 +1,88 @@
+paths:
+  /api/carts/{cid}:
+    get:
+      summary: Get cart by ID
+      tags:
+        - "Carts"
+      parameters:
+      - name: cid
+        in: path
+        required: true
+        description: ID del carrito a buscar
+        schema:
+          $type: String
+      responses:
+        "200":
+          description: Carrito conseguido con éxito
+        "500":
+          description: Error del servidor
+  /api/carts/:
+    post:
+      summary: Crear un carrito
+      tags:
+        - "Carts"
+      responses:
+        "200":
+          description: Carrito creado con éxito
+        "500":
+          description: Error del servidor
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/requestBodies/crearCarrito'
+  /api/carts/{cid}/product/{pid}:
+    delete:
+      summary: Borrar producto por ID del carrito por ID
+      tags:
+        - "Carts"
+      parameters:
+      - name: pid
+        in: path
+        required: true
+        description: ID del producto a eliminar
+        schema:
+          $type: String
+      - name: cid
+        in: path
+        required: true
+        description: ID del carrito a buscar
+        schema:
+          $type: String
+      responses:
+        "200":
+          description: Producto eliminado con éxito del carrito
+        "500":
+          description: Error del servidor
+  /api/carts/{cid}/purchase:
+    get:
+      summary: Comprar el carrito
+      tags:
+        - "Carts"
+      parameters:
+      - name: cid
+        in: path
+        required: true
+        description: ID del carrito a comprar
+        schema:
+          $type: String
+      responses:
+        "200":
+          description: Carrito comprado con éxito
+        "500":
+          description: Error del servidor
+
+components:
+  requestBodies:
+    crearCarrito:
+      type: object
+      properties:
+        product: 
+          type: Array
+          description: ID de los productos a cargar
+        cart: 
+          type: Array
+          description: ID del usuario que crea el carrito
+      example:
+        products: ["63f5743e7b20b0b0675f736h", "63f5748c7b20b0b0675f736k"]
+        user: ["641a51f4d77b94167bec9j8g"]

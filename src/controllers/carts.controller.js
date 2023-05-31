@@ -3,6 +3,7 @@ const {
   mapProductCart,
   calculateCartTotal,
   getUserByID,
+  calculateTicketTotal,
 } = require('../config/carts')
 const { v4: uuidv4 } = require('uuid')
 const UserDTO = require('../dao/DTOs/user.dto')
@@ -75,7 +76,6 @@ try {
     payload: cartUpdated,
   })
 } catch (error) {
-  console.log(error);
   return res.status(500).json({
     status: 'Error',
     payload: error.message,
@@ -255,13 +255,12 @@ const purchaseCart = async (req, res) => {
     let ticketAmount = 0
     let ticket = {}
 
-    // console.log(cartFound.users[0].user);
     const userFound = await getUserByID(cartFound.users[0].user)
     const purchaser = userFound.email
 
     //If any product was able to purchase, then create the ticket
     if (productsPurchased.length > 0) {
-      ticketAmount = calculateCartTotal(productsPurchased)
+      ticketAmount = calculateTicketTotal(productsPurchased)
 
       ticket = {
         code: uuidv4(),
@@ -276,7 +275,7 @@ const purchaseCart = async (req, res) => {
     let cartProductsNotPurchased = {}
     if (productsNotPurchased.length > 0) {
       cartProductsNotPurchased = {
-        totalPrice: calculateCartTotal(productsNotPurchased),
+        totalPrice: calculateTicketTotal(productsNotPurchased),
         totalQuantity: productsNotPurchased.length,
         products: productsNotPurchased,
       }
@@ -285,13 +284,15 @@ const purchaseCart = async (req, res) => {
 
     res.json({
       status: 'ok',
-      msg: 'Ticket creado',
-      ticket,
+      payload: {
+        msg: 'Ticket creado',
+        ticket,
+      }
     })
   } catch (error) {
     res.json({
       status: 'error',
-      msg: error.message,
+      payload: error.message,
     })
   }
 }

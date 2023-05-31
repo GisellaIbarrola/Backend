@@ -1,8 +1,11 @@
-const { productService } = require("../services")
-const { getByID } = require("../services/user.service")
+const { productService, userService } = require("../services")
 
 const calculateCartTotal = (products) => {
   return products.reduce((acc, curr) => acc + curr.unitValue * curr.quantity, 0)
+}
+
+const calculateTicketTotal = (products) => {
+  return products.reduce((acc, curr) => acc + curr._doc.unitValue * curr._doc.quantity, 0)
 }
 
 const mapProductCart = async (products) => {
@@ -35,11 +38,12 @@ const mapProductCart = async (products) => {
 }
 
 const getUserByID = async (id) => {
-  return await getByID(id)
+  return await userService.getByID(id)
 }
 
 module.exports = {
   calculateCartTotal,
   mapProductCart,
-  getUserByID
+  getUserByID,
+  calculateTicketTotal
 }

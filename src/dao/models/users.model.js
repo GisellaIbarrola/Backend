@@ -37,6 +37,19 @@ const UserSchema = new mongoose.Schema({
     enum: roles,
     required: true,
   },
+  documents: {
+    type: [
+      {
+        name: String,
+        reference: String,
+      },
+    ],
+    default: [],
+  },
+  last_connection: {
+    type: String,
+    default: mongoose.now()
+  }
 })
 
 const UsersModel = mongoose.model(usersCollection, UserSchema)

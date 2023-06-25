@@ -3,7 +3,7 @@ const UsersModel = require('./models/users.model')
 class UsersDaoMongo {
   get = () => UsersModel.find()
 
-  getById = (id) => UsersModel.findById(id)
+  getByID = (id) => UsersModel.findById(id)
 
   insert = (user) => UsersModel.create(user)
 
@@ -15,6 +15,9 @@ class UsersDaoMongo {
     UsersModel.findByIdAndUpdate(id, { password: newPassword })
 
   getByEmail = async (email) => UsersModel.find({email: email})
+
+  updatedocs = (id, docs) => UsersModel.findByIdAndUpdate(id , docs)
+
 }
 
 module.exports = new UsersDaoMongo()

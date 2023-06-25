@@ -92,6 +92,37 @@ const recoverPassword = async (req, res, next) => {
   }
 }
 
+const uploadDocs = async (req, res, next) => {
+  try {
+    let user = req.user
+
+    let userDocuments = [];
+
+
+    user.documents.forEach((element) => {
+      userDocuments.push(element.name);
+    });
+
+    if(userDocuments.findIndex((value)=>value==req.body.typeDocument)!=-1 && req.body.typeDocument != 'product' && req.body.typeDocument != 'thumbnail'){
+      return res.status(403).send({status:'error', message:'Archivo ya subido'})
+    }
+
+    await BdSessionManager.editOneById(req.user.id,{
+      documents:[
+        ...req.user.documents,
+        {
+          name: req.body.typeDocument,
+          reference: `/documents/${req.route}/${req.filename}`
+        }
+      ]
+    })
+
+    res.send({ status: 'Ok', message: 'Archivos guardados correctamente' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   login,
   register,
@@ -99,4 +130,5 @@ module.exports = {
   forgotPassword,
   redirectRecoverPassword,
   recoverPassword,
+  uploadDocs
 }

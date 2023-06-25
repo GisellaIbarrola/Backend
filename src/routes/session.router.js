@@ -4,11 +4,13 @@ const passport = require('passport')
 
 const passportCustom = require('../config/passportCall')
 const sessionController = require('../controllers/session.controller')
-const { STRATEGY_REGISTER,
+const {
+  STRATEGY_REGISTER,
   STRATEGY_LOGIN,
   STRATEGY_GITHUB,
-  STRATEGY_JWT, } = require('../utils/constants')
-const { getPayloadByCookie } = require('../config/jwt')
+  STRATEGY_JWT,
+} = require('../utils/constants')
+const multerUtils = require('../utils/multer.utils')
 
 const router = Router()
 
@@ -54,11 +56,8 @@ router.get(
   sessionController.getCurrent
 )
 
-router.post('/forgot-password', sessionController.forgotPassword);
+router.post('/forgot-password', sessionController.forgotPassword)
 
-router.get('/redirectForgotPassword/:token', sessionController.redirectRecoverPassword);
-
-router.post('/reset-password', getPayloadByCookie, sessionController.recoverPassword);
-
+router.post('/reset-password/:token', sessionController.recoverPassword)
 
 module.exports = router

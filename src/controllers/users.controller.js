@@ -1,6 +1,11 @@
-const { ADMIN_NAME, ADMIN_PASSWORD } = require('../config/config')
+const {
+  ADMIN_NAME,
+  ADMIN_PASSWORD,
+  DELETE_ACCOUNT_SUBJECT,
+} = require('../config/config')
 const UserDTO = require('../dao/DTOs/user.dto')
-const userService = require('../services/user.service')
+const { userService } = require('../services')
+const mailingService = require('../services/mailing.service')
 
 const login = async (req, res) => {
   try {
@@ -96,4 +101,80 @@ const uploadDocs = async (req, res) => {
   }
 }
 
-module.exports = { login, register, logout, changePremium, uploadDocs }
+const getAll = async (req, res) => {
+  try {
+    const allUsers = await userService.getAll()
+    const allUsersPrimaryData = allUsers.map((user) => ({
+      name: user.name,
+      lastname: user.lastName,
+      mail: user.email,
+      role: user.role,
+    }))
+    res.send({ status: 'success', msg: allUsersPrimaryData })
+  } catch (error) {
+    res.send({ status: 'error', msg: error.message })
+  }
+}
+
+const deleteAllInactiveUsers = async (req, res) => {
+  try {
+    const usersDeleted = []
+    const allUsers = await userService.getAll()
+
+    //Filter users to delete and send email
+    allUsers.forEach((user) => {
+      const today = new Date()
+      const expirationDate = today.setDate(today.getDate() - 2)
+      const diff = expirationDate < today
+      if (diff) {
+        mailingService.sendMail({
+          to: user.email,
+          subject: DELETE_ACCOUNT_SUBJECT,
+          html: `Hi ${user.name}, your account has been deleted due to 2 days of inactivity`,
+        })
+        usersDeleted.push(user.id)
+      }
+    })
+
+    //Delete filtered users
+    usersDeleted.forEach(async (id) => {
+      await userService.deletedByID(id)
+    })
+    return res.json({
+      status: 'Success',
+      message: `${usersDeleted.length} users were deleted`,
+    })
+  } catch (error) {
+    return res.json({
+      status: 'Error',
+      message: error.message,
+    })
+  }
+}
+
+const deleteById = async (req, res) => {
+  try {
+    const userID = req.params.uid
+    const deleted = await userService.deletedByID
+    return res.json({
+      status: 'Success',
+      payload: 'User sucessfully deleted',
+    })
+  } catch (error) {
+    return res.status(500).json({
+      status: 'Error',
+      payload: error.message,
+    })
+  }
+}
+
+module.exports = {
+  login,
+  register,
+  logout,
+  changePremium,
+  uploadDocs,
+  getAll,
+  deleteAllInactiveUsers,
+  deleteById,
+}

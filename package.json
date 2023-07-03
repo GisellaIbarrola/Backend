@@ -12,6 +12,7 @@
     "commander": "^10.0.1",
     "connect-mongo": "^4.6.0",
     "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-handlebars": "^6.0.6",
@@ -25,6 +26,7 @@
     "mongoose-paginate-v2": "^1.7.1",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.2",
+    "nodemon": "^2.0.22",
     "passport": "^0.6.0",
     "passport-github2": "^0.1.12",
     "passport-jwt": "^4.0.1",
@@ -37,18 +39,18 @@
     "winston": "^3.8.2"
   },
   "scripts": {
-    "dev": "nodemon src/app.js --mode development",
-    "start": "nodemon src/app.js"
+    "dev": "nodemon src/app.js",
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Ariel-Santillan/CoderBackend.git"
+    "url": "git+https://github.com/GisellaIbarrola/Backend.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Ariel-Santillan/CoderBackend/issues"
+    "url": "https://github.com/GisellaIbarrola/Backend/issues"
   },
-  "homepage": "https://github.com/Ariel-Santillan/CoderBackend#readme"
+  "homepage": "https://github.com/GisellaIbarrola/Backend#readme"
 }
